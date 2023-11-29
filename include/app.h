@@ -6,11 +6,16 @@ class App{
  public:
   App();
   ~App();
+  void free();
   void start();
-  bool log_in();
  private:
-  std::string* input;
+  bool log_in();
+  bool create_account(const std::string& user, const std::string& password);
+  bool verify_login(const std::string& user, const std::string& password);
+  std::string* input, *username, *password;
   bool started;
+  bool logged_in;
   sqlite3* db;
+  sqlite3_stmt* query;
 };
 #endif
