@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(trading_app VERSION 0.0.1)
+project(trading_app VERSION 0.0.1.1)
 configure_file(include/app.h include/app.h) #copy the header to binary directory
 set(CMAKE_CXX_STANDARD 11)
 add_executable(main src/main.cpp)
