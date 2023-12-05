@@ -68,8 +68,11 @@ bool App::log_in(){
   return 0;
  }
  else if(c=='r'||c=='R'){
-  
-  return 1;
+  puts("Enter the name of user account:");
+  user=gettext();
+  puts("Enter password:");
+  *input=gettext();
+  return this->create_account(user, *input);
  }
  return 0;
 }
@@ -79,7 +82,7 @@ bool App::verify_login(const std::string& user, const std::string& password){
  bool success=0;
  std::string sql=std::string("SELECT * FROM users where name='")+user+std::string("'and password='")+password+"';";
  if(sqlite3_prepare(db, sql.c_str(), -1, &query,0)){
-  puts("QUERY ERROR");
+  fprintf(stderr,"Query error\n");
   sqlite3_finalize(query);
   query=NULL;
   return 0;
@@ -88,4 +91,16 @@ bool App::verify_login(const std::string& user, const std::string& password){
  sqlite3_finalize(query);
  query=NULL;
  return success;
+}
+
+bool App::create_account(const std::string& user, const std::string& password){
+ if(this->verify_login(user,password)){
+  fprintf(stderr, "Account already exists\n");
+  return 0;
+ }
+ std::string sql=std::string("INSERT INTO users(name, password) values('")+user+std::string("', '"+password+"');");
+ if(sqlite3_exec(db, sql.c_str(), 0,0,0)){
+  fprintf(stderr, "Something went wrong\n");return 0;
+ }
+ return 1;
 }
