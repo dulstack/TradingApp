@@ -1,5 +1,4 @@
 #include "include/app.h"
-#include <stdio.h>
 std::string gettext(){
  std::string res="";
  char c;
@@ -13,9 +12,15 @@ std::string gettext(){
  }
  return res;
 }
+
+void get_login(std::string& name, std::string& password){
+ puts("Enter the name of user account:");
+ name=gettext();
+ puts("Enter password:");
+ password=gettext();
+}
 App::App(){
  db=NULL;
- query=NULL;
  logged_in=0;
  username=NULL;
  password=NULL;
@@ -27,21 +32,19 @@ App::~App(){
  }
 }
 void App::free(){
- puts("Freeing resources");
  if(input)delete input;
- if(query)sqlite3_finalize(query);
- if(db)sqlite3_close(db);
+ if(db)delete db;
  if(password)delete password;
  if(username)delete username;
- db=NULL;query=NULL;logged_in=0;username=NULL;password=NULL;started=0;
+ db=NULL;logged_in=0;username=NULL;password=NULL;started=0;
 }
 void App::start(){
  started=1;
- sqlite3_open("data.db", &db);
- //create tables if table 'users' doesn't exist
- if(sqlite3_exec(db, "CREATE TABLE users(ID integer PRIMARY KEY, name text NOT NULL, password text, balance integer DEFAULT 0, created DATE DEFAULT CURRENT_DATE);",0,0,0)==0){
-  sqlite3_exec(db, "Create TABLE currencies(ID integer PRIMARY KEY, name text NOT NULL, price float NOT NULL);",0,0,0);
-  sqlite3_exec(db, "CREATE TABLE users_inventory(ID integer PRIMARY KEY, UID integer NOT NULL, currency_ID integer NOT NULL, FOREIGN KEY(UID) REFERENCES users(ID), FOREIGN KEY(currency_ID) REFERENCES currencies(ID));",0,0,0);
+ username=new std::string;
+ password=new std::string;
+ db=new DB;
+ if(!db->open("data.db")){
+  fprintf(stderr, "Failed to open the database\n");
  }
  input=new std::string;
  this->log_in();
@@ -57,50 +60,15 @@ bool App::log_in(){
  c=getchar();
  std::string user="";
  if(c=='l'||c=='L'){
-  puts("Enter the name of user account:");
-  user=gettext();
-  puts("Enter password:");
-  *input=gettext();
-  if(this->verify_login(user, *input)){
-   return 1;
+ get_login(*username, *password);
+  if(db->verify_login(*username, *password)){
+   logged_in=1;
   }
-  fprintf(stderr, "Wrong username or password\n");
-  return 0;
+  else{fprintf(stderr, "Wrong username or password\n");}
  }
  else if(c=='r'||c=='R'){
-  puts("Enter the name of user account:");
-  user=gettext();
-  puts("Enter password:");
-  *input=gettext();
-  return this->create_account(user, *input);
+  get_login(*username, *password);
+  logged_in=db->create_account(*username, *password);
  }
- return 0;
-}
-
-bool App::verify_login(const std::string& user, const std::string& password){
- //TODO: replace \ with \\ and ' with \' to prevent from SQL injections
- bool success=0;
- std::string sql=std::string("SELECT * FROM users where name='")+user+std::string("'and password='")+password+"';";
- if(sqlite3_prepare(db, sql.c_str(), -1, &query,0)){
-  fprintf(stderr,"Query error\n");
-  sqlite3_finalize(query);
-  query=NULL;
-  return 0;
- }
- if(sqlite3_step(query)!=SQLITE_DONE){success=true;this->username=new std::string(user); this->password=new std::string(password);}
- sqlite3_finalize(query);
- query=NULL;
- return success;
-}
-
-bool App::create_account(const std::string& user, const std::string& password){
- if(this->verify_login(user,password)){
-  fprintf(stderr, "Account already exists\n");
-  return 0;
- }
- std::string sql=std::string("INSERT INTO users(name, password) values('")+user+std::string("', '"+password+"');");
- if(sqlite3_exec(db, sql.c_str(), 0,0,0)){
-  fprintf(stderr, "Something went wrong\n");return 0;
- }
- return 1;
+ return logged_in;
 }

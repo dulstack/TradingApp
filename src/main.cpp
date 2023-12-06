@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include "include/app.h"
+#include "include/version.h"
 App* app=NULL;
 void quit(int status){
  if(app)delete app;
