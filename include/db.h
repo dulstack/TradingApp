@@ -14,7 +14,6 @@ class DB{
  private:
   sqlite3* db;
   sqlite3_stmt* query;
-  friend class App;
   bool isopen;
 };
 #endif
