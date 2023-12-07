@@ -1,14 +1,14 @@
 #include "include/app.h"
 std::string gettext(){
  std::string res="";
- char c;
+ int c;
  c=getc(stdin);
- while(c!=-1&&c!=0){
+ if(c==-1){return std::string("quit");}
+ while(c!=-1&&c!='\n'){
   if(c!='\n'){
-   res=res+c;
+   res=res+(char)c;
   }
   c=getchar();
-  if(c=='\n')break;
  }
  return res;
 }

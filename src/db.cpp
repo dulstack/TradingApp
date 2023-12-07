@@ -17,6 +17,7 @@ bool DB::create_account(const std::string& user, const std::string& password){
   fprintf(stderr, "Account already exists\n");
   return 0;
  }
+ //TODO: add password encryption and rename 'password' column with 'hash'
  std::string sql=std::string("INSERT INTO users(name, password) values('")+user+std::string("', '"+password+"');");
  if(sqlite3_exec(db, sql.c_str(), 0,0,0)){
   fprintf(stderr, "Something went wrong\n");return 0;
