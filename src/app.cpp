@@ -61,10 +61,9 @@ bool App::log_in(){
  std::string user="";
  if(c=='l'||c=='L'){
  get_login(*username, *password);
-  if(db->verify_login(*username, *password)){
-   logged_in=1;
+  if(!(logged_in=db->verify_login(*username, *password))){
+   fprintf(stderr, "Wrong username or password\n");
   }
-  else{fprintf(stderr, "Wrong username or password\n");}
  }
  else if(c=='r'||c=='R'){
   get_login(*username, *password);

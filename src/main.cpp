@@ -33,7 +33,7 @@ int main(int argc, char** argv){
   for(int i=1; i<argc;i++){
    if(arg_check(*(argv+i))){found=1;break;}
   }
-  if(!found){fprintf(stderr, "Unknown command: \"%s\"", *(argv+1));print_help();}
+  if(!found){fprintf(stderr, "Unknown command: \"%s\"\n", *(argv+1));print_help();}
   return 0;
  }
  app=new App;
