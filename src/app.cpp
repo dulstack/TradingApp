@@ -3,6 +3,7 @@ std::string gettext(){
  std::string res="";
  int c;
  c=getc(stdin);
+ while(c=='\n'){c=getc(stdin);}
  if(c==-1){return std::string("quit");}
  while(c!=-1&&c!='\n'){
   if(c!='\n'){
@@ -27,11 +28,10 @@ App::App(){
  started=0;
 }
 App::~App(){
- if(started){
-  this->free();
- }
+ if(started)this->free();
 }
 void App::free(){
+ puts("free();");
  if(input)delete input;
  if(db)delete db;
  if(password)delete password;
@@ -44,13 +44,25 @@ void App::start(){
  password=new std::string;
  db=new DB;
  if(!db->open("data.db")){
-  fprintf(stderr, "Failed to open the database\n");
+  fprintf(stderr, "Failed to open the database\n");this->free();return;
  }
  input=new std::string;
  this->log_in();
  puts("Started the trading app. Type \"help\" to see commands");
- while((*input=gettext())!="quit"){
-  if(*input=="help"){puts("quit\t\tquit this program");}
+ while((*input=gettext())!="quit"){		//main loop
+  if(*input=="help"){
+   puts("\nquit\t\tQuit this program\n"
+   "list\t\t\tSee the list of cryptocurrencies and their prices\n"
+   "bal\t\t\tSee your balance\n"
+   "buy [currency name]\tBuy the cryptocurrency"
+   );
+  }
+  else if(*input=="list"){
+   printf("%s", db->list_curr().c_str());
+  }
+  else{
+   fprintf(stderr,"Unknown command. Type \"help\" to see commands\n");
+  }
  }
 }
 
