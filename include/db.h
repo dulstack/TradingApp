@@ -11,6 +11,7 @@ class DB{
   void free();
   bool create_account(const std::string& user, const std::string& password);
   bool verify_login(const std::string& user, const std::string& password);
+  std::string list_curr();
  private:
   sqlite3* db;
   sqlite3_stmt* query;
