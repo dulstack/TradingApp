@@ -4,8 +4,9 @@
 <h3>Compiling</h3>
 <p>You will need to have cmake installed to do this</p>
 <p>To compile in command line do:</p>
-<code><pre>mkdir bin
+<code>
+<pre>mkdir bin
 cd bin
 cmake ..
-cmake --build .
-</pre></code>
+cmake --build .</pre>
+</code>
