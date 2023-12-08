@@ -15,7 +15,7 @@ void print_help(){
 }
 void print_version(){
  printf("Version: %s\n\n", VERSION);
- puts("This is a simple command-line application for trading with fake cryptocurrencies");
+ puts("A simple command-line application for trading with fake cryptocurrencies");
 }
 bool arg_check(std::string arg){
  if(arg=="--help"||arg=="-h"){
