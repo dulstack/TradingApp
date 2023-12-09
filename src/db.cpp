@@ -88,16 +88,10 @@ void DB::list_curr(){
 }
 
 void DB::save_credentials(const std::string& name, const std::string& hash){
- printf("%p\n", &name);
- puts("DEBUG 1");
  this->logout();
- puts("DEBUG 2");
  if(name.size()<1||hash.size()<1)return;
- puts("DEBUG 3");
  this->username=new std::string(name);
- puts("DEBUG 4");
  this->hash=new std::string(hash);
- puts("DEBUG 5");
  this->logged_in=1;
 }
 
