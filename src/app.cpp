@@ -31,7 +31,6 @@ App::~App(){
  if(started)this->free();
 }
 void App::free(){
- puts("free();");
  if(input)delete input;
  if(db)delete db;
  if(password)delete password;
@@ -40,8 +39,6 @@ void App::free(){
 }
 void App::start(){
  started=1;
- username=new std::string;
- password=new std::string;
  db=new DB;
  if(!db->open("data.db")){
   fprintf(stderr, "Failed to open the database\n");this->free();return;
@@ -51,15 +48,20 @@ void App::start(){
  puts("Started the trading app. Type \"help\" to see commands");
  while((*input=gettext())!="quit"){		//main loop
   if(*input=="help"){
-   puts("\nquit\t\tQuit this program\n"
-   "list\t\t\tSee the list of cryptocurrencies and their prices\n"
-   "bal\t\t\tSee your balance\n"
-   "buy [currency name]\tBuy the cryptocurrency"
+   puts("\n quit\t\tQuit this program\n"
+   " list\t\t\t\tSee the list of cryptocurrencies and their prices\n"
+   " bal\t\t\t\tSee your balance\n"
+   " buy [currency] [quanity]\tBuy the cryptocurrency\n"
+   " sell [currency] [quanity]\tSell the cryptocurrency\n"
+   " login\t\t\t\tLog in to the existing account\n"
+   " register\t\t\t\tCreate the account\n"
+   " logout"
    );
   }
   else if(*input=="list"){
-   printf("%s", db->list_curr().c_str());
+   db->list_curr();
   }
+  else if(*input=="bal")db->bal();
   else{
    fprintf(stderr,"Unknown command. Type \"help\" to see commands\n");
   }
@@ -68,6 +70,16 @@ void App::start(){
 
 bool App::log_in(){
  printf("Type [L] to login or [R] to register\n");
+ 
+ if(password)delete password;
+ if(username)delete username;
+ 
+ username=new std::string;		//Temporary strings are stored in heap to avoid memory leaks when ctrl+c signal is processed
+ password=new std::string;
+ if(!(password&&username)){
+  fprintf(stderr, "Memory allocation failed\n");
+  return 0;
+ }
  int c;
  c=getchar();
  std::string user="";
@@ -81,5 +93,7 @@ bool App::log_in(){
   get_login(*username, *password);
   logged_in=db->create_account(*username, *password);
  }
+ delete username;username=NULL;
+ delete password;password=NULL;
  return logged_in;
 }
