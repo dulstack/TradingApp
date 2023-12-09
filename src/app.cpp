@@ -84,10 +84,11 @@ bool App::log_in(){
  c=getchar();
  std::string user="";
  if(c=='l'||c=='L'){
- get_login(*username, *password);
+  get_login(*username, *password);
   if(!(logged_in=db->verify_login(*username, *password))){
    fprintf(stderr, "Wrong username or password\n");
   }
+  else{db->save_credentials(*username, *password);}
  }
  else if(c=='r'||c=='R'){
   get_login(*username, *password);

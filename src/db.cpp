@@ -6,6 +6,7 @@ static std::string encrypt(const std::string& arg){
 }
 bool DB::verify_login(const std::string& user, const std::string& password, bool is_hash){
  //TODO: replace \ with \\ and ' with \' to prevent from SQL injections
+ if(user.size()<1||password.size()<1)return 0;
  bool success=0;
  std::string hash;
  if(!is_hash){hash=encrypt(password);}
@@ -18,7 +19,6 @@ bool DB::verify_login(const std::string& user, const std::string& password, bool
  }
  else if(sqlite3_step(query)!=SQLITE_DONE){
   success=true;
-  this->save_credentials(user, hash);
  }
  sqlite3_finalize(query);
  query=NULL;
@@ -44,6 +44,8 @@ DB::DB(){
  query=NULL;
  username=NULL;
  hash=NULL;
+ logged_in=0;
+ isopen=0;
 }
 DB::~DB(){
  this->close();
@@ -86,13 +88,21 @@ void DB::list_curr(){
 }
 
 void DB::save_credentials(const std::string& name, const std::string& hash){
+ printf("%p\n", &name);
+ puts("DEBUG 1");
  this->logout();
+ puts("DEBUG 2");
+ if(name.size()<1||hash.size()<1)return;
+ puts("DEBUG 3");
  this->username=new std::string(name);
+ puts("DEBUG 4");
  this->hash=new std::string(hash);
+ puts("DEBUG 5");
+ this->logged_in=1;
 }
 
 bool DB::bal(){
- if(!this->verify_login(*username, *hash, true)){
+ if(!this->logged_in||!this->verify_login(*username, *hash, true)){
   fprintf(stderr, "Error: you are not logged in\n");
   return 0;
  }
@@ -114,6 +124,7 @@ bool DB::bal(){
  return success;
 }
 void DB::logout(){
+ this->logged_in=0;
  if(username){delete username;username=NULL;}
  if(hash){delete hash;hash=NULL;}
 }
