@@ -18,7 +18,7 @@ class DB{
   bool bal();				//print the balance
   int get_user_id(const std::string& name);
   float get_user_bal(int id);
-  int get_currency_ID(const std::string& currency);		//not implemented yet
+  int get_currency_ID(const std::string& currency);
   float get_price(const std::string& currency);
   bool set_price(const std::string& currency, float price);
   bool buy(const std::string& currency, float quanity);		//will increase currency price by 0.1*quanity
