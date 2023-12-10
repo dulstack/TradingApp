@@ -56,7 +56,6 @@ bool DB::create_account(const std::string& user, const std::string& password){
  return 1;
 }
 DB::DB(){
- UID=-1;
  db=NULL;
  query=NULL;
  username=NULL;
@@ -112,7 +111,6 @@ void DB::save_credentials(const std::string& name, const std::string& hash){
  this->logged_in=1;
 }
 float DB::get_user_bal(int id){
- //TODO make verify_login use id
  if(!this->logged_in||!this->verify_login(*username, *hash, true)){
   fprintf(stderr, "Error: you are not logged in\n");
   return -1;
@@ -121,7 +119,7 @@ float DB::get_user_bal(int id){
  float res=-1;
  if(sqlite3_prepare(db, sql.c_str(),-1, &query, 0)){
   #ifdef DEBUG
-  fprintf(stderr, "Query error in DB::bal()\nQuery: %s\n", sql.c_str());
+  fprintf(stderr, "Query error in DB::get_user_bal()\nQuery: %s\n", sql.c_str());
   #endif
  }
  else if(sqlite3_step(query)==SQLITE_DONE){fprintf(stderr, "Something went wrong\n");}
@@ -134,27 +132,16 @@ float DB::get_user_bal(int id){
 
 }
 bool DB::bal(){
- //TODO: modify some stuff here to use get_user_bal
  if(!this->logged_in||!this->verify_login(*username, *hash, true)){
   fprintf(stderr, "Error: you are not logged in\n");
   return 0;
  }
- std::string sql="SELECT balance FROM users where name='"+std::string(*this->username)+"';";
- bool success=0;
- if(sqlite3_prepare(db, sql.c_str(),-1, &query, 0)){
-  #ifdef DEBUG
-  fprintf(stderr, "Query error in DB::bal()\nQuery: %s\n", sql.c_str());
-  #endif
-  success=0;
- }
- else if(sqlite3_step(query)==SQLITE_DONE){fprintf(stderr, "Something went wrong\n");}
- else{
-  printf("Your balance: %s$\n", sqlite3_column_text(query, 0));
-  success=1;
- }
- sqlite3_finalize(query);
- query=NULL;
- return success;
+ int id=this->get_user_id(*username);
+ if(id==-1)return 0;
+ float bal=this->get_user_bal(id);
+ if(bal==-1)return 0;
+ printf("Your balance: %f$\n", bal);
+ return 1;
 }
 void DB::logout(){
  this->logged_in=0;
@@ -194,6 +181,20 @@ bool DB::set_price(const std::string& currency, float price){
  }
  #endif
  return success;
+}
+int DB::get_currency_ID(const std::string& currency){
+ int res=-1;
+ std::string sql=std::string("SELECT ID FROM currencies where name='")+currency+"';";
+ if(!sqlite3_prepare(db, sql.c_str(), -1, &query,0)){
+  if(sqlite3_step(query)!=SQLITE_DONE){res=sqlite3_column_int(query, 0);}
+ }
+ #ifdef DEBUG
+ else{
+  fprintf(stderr, "Query error in DB::get_currency_ID\nSQL query: %s\n", sql.c_str());
+ }
+ #endif
+ sqlite3_finalize(query);query=NULL;
+ return res;
 }
 bool DB::buy(const std::string& currency, float quanity){
  //TODO: add login verification(ID should be used)

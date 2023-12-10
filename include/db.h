@@ -25,8 +25,6 @@ class DB{
   bool sell(const std::string& currency, float quanity); 		//will decrease currency price by 0.1*quanity
   void logout();
  private:
-  //TODO: use user ID instead of username
-  int UID;
   std::string* username;
   std::string* hash;
   sqlite3* db;

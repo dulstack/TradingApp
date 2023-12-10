@@ -48,13 +48,13 @@ void App::start(){
  puts("Started the trading app. Type \"help\" to see commands");
  while((*input=gettext())!="quit"){		//main loop
   if(*input=="help"){
-   puts("\n quit\t\tQuit this program\n"
+   puts("\n quit\t\t\t\tQuit this program\n"
    " list\t\t\t\tSee the list of cryptocurrencies and their prices\n"
    " bal\t\t\t\tSee your balance\n"
    " buy [currency] [quanity]\tBuy the cryptocurrency\n"
    " sell [currency] [quanity]\tSell the cryptocurrency\n"
    " login\t\t\t\tLog in to the existing account\n"
-   " register\t\t\t\tCreate the account\n"
+   " register\t\t\tCreate the account\n"
    " logout"
    );
   }
