@@ -1,5 +1,5 @@
 #include "include/app.h"
-std::string gettext(){
+static std::string gettext(){
  std::string res="";
  int c;
  c=getc(stdin);
@@ -14,7 +14,7 @@ std::string gettext(){
  return res;
 }
 
-void get_login(std::string& name, std::string& password){
+static void get_login(std::string& name, std::string& password){
  puts("Enter the name of user account:");
  name=gettext();
  puts("Enter password:");
@@ -53,8 +53,7 @@ void App::start(){
    " bal\t\t\t\tSee your balance\n"
    " buy [currency] [quanity]\tBuy the cryptocurrency\n"
    " sell [currency] [quanity]\tSell the cryptocurrency\n"
-   " login\t\t\t\tLog in to the existing account\n"
-   " register\t\t\tCreate the account\n"
+   " login\t\t\t\tLog in to the existing account or create one\n"
    " logout"
    );
   }
@@ -62,6 +61,15 @@ void App::start(){
    db->list_curr();
   }
   else if(*input=="bal")db->bal();
+  else if(input->substr(0,3)=="buy"){
+   
+  }
+  else if(*input=="login"){
+   this->log_in();
+  }
+  else if(*input=="logout"){
+   db->logout();
+  }
   else{
    fprintf(stderr,"Unknown command. Type \"help\" to see commands\n");
   }

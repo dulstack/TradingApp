@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(trading_app VERSION 0.1.1.3)
+project(trading_app VERSION 0.1.1.4)
 configure_file(include/app.h include/app.h) #copy the header to binary directory
 configure_file(include/version.h.in include/version.h)
 configure_file(include/db.h include/db.h)
