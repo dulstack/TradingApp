@@ -197,13 +197,50 @@ int DB::get_currency_ID(const std::string& currency){
  return res;
 }
 bool DB::buy(const std::string& currency, float quanity){
- //TODO: add login verification(ID should be used)
- bool success=0;
- float total=0, price=get_price(currency); //total means money that will be spent
- if(price==-1){return 0;}
- if(quanity<=0){fprintf(stderr, "Error: invalid quanity\n");return 0;}
- total=price*quanity;
  
+ bool success=0;
+ float resbal=0, price=get_price(currency); //total means money that will be spent
+ if(price==-1){return 0;}
+ int id=0, curr_id;
+ if((id=get_user_id(*username))==-1){
+  return 0;
+ }
+ //check for errors
+ if(quanity<=0){fprintf(stderr, "Error: invalid quanity\n");return 0;}
+ if((resbal=get_user_bal(id))==-1||(curr_id=get_currency_ID(currency))==-1){
+  fprintf(stderr, "Unknown error occurred\n");return 0;
+ }
+ //final balance after transaction
+ resbal=resbal-price*quanity;
+ std::string sql=std::string("SELECT UID, currency_ID, quanity FROM users_inventory where UID='")+std::to_string(id)+"';";
+ if(sqlite3_prepare(db, sql.c_str(),-1, &query,0)){
+   #ifdef DEBUG
+   fprintf(stderr, "Query error in DB::buy\nSQL query: %s\n", sql.c_str());
+   #endif
+ }
+ else{
+  if(sqlite3_step(query)==SQLITE_DONE){		//no results, so create a record in users_inventory
+   sql=std::string("INSERT INTO users_inventory(UID, currency_id, quanity) values(")+std::to_string(id)+std::string(",")+std::to_string(curr_id)+std::string(",")+std::to_string(quanity);
+   if(sqlite3_exec(db, sql.c_str(), 0,0,0)){
+    #ifdef DEBUG
+    fprintf(stderr, "Query error in DB::buy when trying to insert\nSQL query: %s\n", sql.c_str());
+    #endif
+   }
+   else{
+    success=1;
+   }
+  }
+  else{				//Update an existing record
+   sqlite3_stmt* tmp_stmt=query;	//save the statement because get_quanity modifies it
+   float q_bef=get_quanity(id, curr_id);		//quanity before
+   query=tmp_stmt;
+   if(q_bef==-1){fprintf(stderr, "Something went wrong\n");}
+   else{
+    
+   }
+  }
+ }
+ sqlite3_finalize(query);query=NULL;		//free the precomiled statement
  return success;
 }
 bool DB::sell(const std::string& currency, float quanity){

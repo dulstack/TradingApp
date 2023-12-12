@@ -16,6 +16,7 @@ class DB{
   bool verify_login(const std::string& user, const std::string& password, bool is_hash=false);
   void list_curr();
   bool bal();				//print the balance
+  float get_quanity(int id, int curr_id);	//not implemented, may cause linker error
   int get_user_id(const std::string& name);
   float get_user_bal(int id);
   int get_currency_ID(const std::string& currency);
