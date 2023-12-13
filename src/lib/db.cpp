@@ -1,4 +1,4 @@
-#include "../include/db.h"
+#include "include/db.h"
 static std::string encrypt(const std::string& arg){
  //not implemented yet
  std::string res=arg;
@@ -281,7 +281,8 @@ bool DB::buy(const std::string& currency, float quanity){
  sql=std::string("UPDATE currencies SET price='")+s_resp+std::string("' WHERE ID='")+std::to_string(curr_id)+"';";
  sqlite3_exec(db, sql.c_str(),0,0,0);
  std::string comma=",";
- std::string sql=std::string("INSERT INTO log(UID, currency_ID, quanity) values(")+s_id+comma+s_currid+comma+s_quanity+");";
+ sql=std::string("INSERT INTO log(UID, currency_ID, quanity) values(")+s_id+comma+s_currid+comma+s_quanity+");";
+ sqlite3_exec(db, sql.c_str(),0,0,0);
  return success;
 }
 bool DB::sell(const std::string& currency, float quanity){
