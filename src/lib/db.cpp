@@ -290,7 +290,7 @@ bool DB::buy(const std::string& currency, float quanity){
  std::string s_resb=std::to_string(resbal);
  float resp=price+(quanity*0.1);
  std::string s_resp=std::to_string(resp);
- std::string s_quanity=std::to_string(quanity+q_bef);
+ std::string s_quanity=std::to_string(quanity);
  //TODO: make the set_balance funxtion
  std::string sql=std::string("UPDATE users SET balance='")+s_resb+std::string("' WHERE ID='")+s_id+"';";
  sqlite3_exec(db, sql.c_str(),0,0,0);
