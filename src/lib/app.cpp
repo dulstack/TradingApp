@@ -1,4 +1,20 @@
 #include "include/app.h"
+#include <string.h>
+static std::string get_word(const std::string& str,int wordpos){
+ std::string res="";		//tokenize the string and find the given word
+ char* buf= new char[str.size()];
+ char* saveptr;
+ char* tok;
+ int i=0;
+ strcpy(buf, str.c_str());
+ saveptr=buf;
+ while(i<=wordpos&&(tok=strtok_r(NULL," ", &saveptr))!=NULL){
+  i++;
+ }
+ if(i>=wordpos)res=tok;
+ delete[] buf;
+ return res;
+}
 static std::string gettext(){
  std::string res="";
  int c;
@@ -62,7 +78,13 @@ void App::start(){
   }
   else if(*input=="bal")db->bal();
   else if(input->substr(0,3)=="buy"){
-   
+   std::string cur_name=get_word(*input, 1);
+   float price;
+   if(get_word(*input, 2)==""){fprintf(stderr, "Not enough arguments\n");continue;}
+   price=atof(get_word(*input, 2).c_str());
+   if(!db->buy(cur_name, price)){
+    fprintf(stderr, "Purchase failed\n");
+   }
   }
   else if(*input=="login"){
    this->log_in();

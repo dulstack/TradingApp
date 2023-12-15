@@ -126,7 +126,7 @@ float DB::get_user_bal(int id){
   fprintf(stderr, "Query error in DB::get_user_bal()\nQuery: %s\n", sql.c_str());
   #endif
  }
- else if(sqlite3_step(query)==SQLITE_DONE){fprintf(stderr, "Something went wrong\n");}
+ else if(sqlite3_step(query)==SQLITE_DONE){fprintf(stderr, "Something went wrong when trying to get the balance\n");}
  else{
   res=(float)sqlite3_column_double(query, 0);
  }
@@ -201,6 +201,18 @@ int DB::get_currency_ID(const std::string& currency){
 }
 float DB::get_quanity(int id, int curr_id){
  float res=-1;
+ std::string sql=std::string("SELECT quanity from users_inventory WHERE UID=")+std::to_string(id)+std::string(" AND currency_id="+std::to_string(curr_id)+";");
+ if(!sqlite3_prepare(db, sql.c_str(), -1, &query, NULL)){
+  if(sqlite3_step(query)!=SQLITE_DONE){
+   res=sqlite3_column_double(query, 0);
+  }
+ }
+ #ifdef DEBUG
+ else{
+  fprintf(stderr, "Query error in DB::get_quanity\nSQL query: %s\n", sql.c_str());
+ }
+ #endif
+ sqlite3_finalize(query);query=NULL;
  return res;
 }
 bool DB::set_quanity(int id, int curr_id, float quanity){
@@ -213,7 +225,7 @@ bool DB::set_quanity(int id, int curr_id, float quanity){
  }
  else{
   if(sqlite3_step(query)==SQLITE_DONE){		//no results, so create a record in users_inventory
-   sql=std::string("INSERT INTO users_inventory(UID, currency_id, quanity) values(")+std::to_string(id)+std::string(",")+std::to_string(curr_id)+std::string(",")+std::to_string(quanity);
+   sql=std::string("INSERT INTO users_inventory(UID, currency_id, quanity) values(")+std::to_string(id)+std::string(",")+std::to_string(curr_id)+std::string(",")+std::to_string(quanity)+");";
    if(sqlite3_exec(db, sql.c_str(), 0,0,0)){
     #ifdef DEBUG
     fprintf(stderr, "Query error in DB::set_quanity when trying to insert\nSQL query: %s\n", sql.c_str());
@@ -240,7 +252,6 @@ bool DB::set_quanity(int id, int curr_id, float quanity){
 }
 bool DB::buy(const std::string& currency, float quanity){
  if(!check_login())return 0;
- bool success=0;
  float resbal=0, price=get_price(currency); //total means money that will be spent
  if(price==-1){return 0;}
  int id=0, curr_id;
@@ -249,10 +260,15 @@ bool DB::buy(const std::string& currency, float quanity){
  }
  //check for errors
  float q_bef=get_quanity(id, curr_id);		//quanity before
- if(q_bef==-1){fprintf(stderr, "Something went wrong\n");}
  if(quanity<=0){fprintf(stderr, "Error: invalid quanity\n");return 0;}
  if((resbal=get_user_bal(id))==-1||(curr_id=get_currency_ID(currency))==-1){
   fprintf(stderr, "Unknown error occurred\n");return 0;
+ }
+ if(q_bef==-1){			//Record in users_inventory has not been found, so create one
+  q_bef=0;
+  if(!set_quanity(id, curr_id, q_bef)){
+   fprintf(stderr, "Something went wrong\n");
+  }
  }
  //TODO: add confirmation
  //final balance after transaction
@@ -260,7 +276,7 @@ bool DB::buy(const std::string& currency, float quanity){
   fprintf(stderr, "Not enough money\n");
   return 0;
  }
- resbal=resbal-price*quanity;
+ resbal=resbal-(price*quanity);
  if(!this->set_quanity(id, curr_id, quanity+q_bef)){
   #ifdef DEBUG
   fprintf(stderr, "Failed to set the quanity\n");
@@ -273,7 +289,8 @@ bool DB::buy(const std::string& currency, float quanity){
  std::string s_id=std::to_string(id);
  std::string s_currid=std::to_string(curr_id);
  std::string s_resb=std::to_string(resbal);
- std::string s_resp=std::to_string(price-quanity*0.1);
+ float resp=price+(quanity*0.1);
+ std::string s_resp=std::to_string(resp);
  std::string s_quanity=std::to_string(quanity+q_bef);
  //TODO: make the set_balance funxtion
  std::string sql=std::string("UPDATE users SET balance='")+s_resb+std::string("' WHERE ID='")+s_id+"';";
@@ -283,7 +300,7 @@ bool DB::buy(const std::string& currency, float quanity){
  std::string comma=",";
  sql=std::string("INSERT INTO log(UID, currency_ID, quanity) values(")+s_id+comma+s_currid+comma+s_quanity+");";
  sqlite3_exec(db, sql.c_str(),0,0,0);
- return success;
+ return 1;
 }
 bool DB::sell(const std::string& currency, float quanity){
  bool success=0;

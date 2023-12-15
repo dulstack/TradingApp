@@ -19,3 +19,6 @@ print:
 	echo "$(OBJ_SRC)\n$(OBJ)\n"
 bin:
 	mkdir bin
+.PHONY: run
+run:
+	cd bin;./main
