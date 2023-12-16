@@ -1,4 +1,5 @@
 #include "include/db.h"
+#include "include/app.h"
 static std::string encrypt(const std::string& arg){
  //not implemented yet
  std::string res=arg;
@@ -144,7 +145,28 @@ bool DB::bal(){
  float bal=this->get_user_bal(id);
  if(bal==-1)return 0;
  printf("Your balance: %f$\n", bal);
- return 1;
+ std::string sql=std::string("SELECT currencies.name, quanity FROM users_inventory INNER JOIN currencies ON currencies.ID=currency_ID WHERE UID=")+std::to_string(id)+" ORDER BY quanity ASC;";
+ bool success=0;
+ if(!sqlite3_prepare(db, sql.c_str(), -1, &query, NULL)){
+  success=1;
+  if(sqlite3_step(query)!=SQLITE_DONE){		//if there is any record found with that user id
+   printf("Cryptocurrencies owned:\n");
+   sqlite3_reset(query);			//step back
+  }
+  while(sqlite3_step(query)!=SQLITE_DONE){
+   printf("%s\t\tquanity: %s\n", sqlite3_column_text(query, 0), sqlite3_column_text(query, 1));
+  }
+  printf("\n");
+ }
+ else{
+  #ifdef DEBUG
+  fprintf(stderr, "Query error in DB::bal\nSQL query: %s\n", sql.c_str());
+  #else
+  fprintf(stderr, "Something went wrong\n");
+  #endif
+ }
+ sqlite3_finalize(query);query=NULL;
+ return success;
 }
 void DB::logout(){
  this->logged_in=0;
@@ -269,13 +291,18 @@ bool DB::buy(const std::string& currency, float quanity){
  if(q_bef==-1){
   fprintf(stderr, "Something went wrong\n");
  }
- //TODO: add confirmation
  //final balance after transaction
+ printf("You will spend %f$\nYour balance after this transaction will be %f$\nContinue? [Y/N]\n",price*quanity, resbal-(price*quanity));
+ std::string in=gettext().substr(0,1);
+ if(in!="Y"&&in!="y"){
+  return 1;
+ }
  if(price*quanity>resbal){
   fprintf(stderr, "Not enough money\n");
   return 0;
  }
  resbal=resbal-(price*quanity);
+ 
  if(!this->set_quanity(id, curr_id, quanity+q_bef)){
   #ifdef DEBUG
   fprintf(stderr, "Failed to set the quanity\n");
@@ -291,7 +318,6 @@ bool DB::buy(const std::string& currency, float quanity){
  float resp=price+(quanity*0.1);
  std::string s_resp=std::to_string(resp);
  std::string s_quanity=std::to_string(quanity);
- //TODO: make the set_balance funxtion
  std::string sql=std::string("UPDATE users SET balance='")+s_resb+std::string("' WHERE ID='")+s_id+"';";
  sqlite3_exec(db, sql.c_str(),0,0,0);
  sql=std::string("UPDATE currencies SET price='")+s_resp+std::string("' WHERE ID='")+std::to_string(curr_id)+"';";
