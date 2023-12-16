@@ -8,14 +8,16 @@ static std::string get_word(const std::string& str,int wordpos){
  int i=0;
  strcpy(buf, str.c_str());
  saveptr=buf;
- while(i<=wordpos&&(tok=strtok_r(NULL," ", &saveptr))!=NULL){
+ while((tok=strtok_r(NULL," ", &saveptr))!=NULL&&i<wordpos){
   i++;
  }
- if(i>=wordpos)res=tok;
+ if(i>=wordpos){
+  if(tok)res=tok;
+ }
  delete[] buf;
  return res;
 }
-static std::string gettext(){
+std::string gettext(){
  std::string res="";
  int c;
  c=getc(stdin);
