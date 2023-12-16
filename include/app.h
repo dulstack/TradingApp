@@ -1,6 +1,7 @@
 #ifndef __APP_H
 #define __APP_H
 #include "include/db.h"
+std::string gettext();
 class App{
  public:
   App();
