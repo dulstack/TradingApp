@@ -79,13 +79,22 @@ void App::start(){
    db->list_curr();
   }
   else if(*input=="bal")db->bal();
-  else if(input->substr(0,3)=="buy"){
+  else if(input->substr(0,4)=="buy "){		//command begins with buy
    std::string cur_name=get_word(*input, 1);
-   float price;
+   float quanity;
    if(get_word(*input, 2)==""){fprintf(stderr, "Not enough arguments\n");continue;}
-   price=atof(get_word(*input, 2).c_str());
-   if(!db->buy(cur_name, price)){
+   quanity=atof(get_word(*input, 2).c_str());
+   if(!db->buy(cur_name, quanity)){
     fprintf(stderr, "Purchase failed\n");
+   }
+  }
+  else if(input->substr(0,5)=="sell "){
+   std::string cur_name=get_word(*input, 1);
+   std::string s_quanity=get_word(*input, 2);
+   if(s_quanity==""){fprintf(stderr, "Not enough arguments\n");continue;}
+   float quanity=atof(s_quanity.c_str());
+   if(!db->sell(cur_name, quanity)){
+    fprintf(stderr, "Sale failed\n");
    }
   }
   else if(*input=="login"){

@@ -3,7 +3,7 @@ LFLAGS=-lsqlite3
 CFLAGS=-I .
 OBJ_SRC=$(wildcard src/lib/*.cpp)
 RM=rm
-VERSION=0.2.1
+VERSION=1.0.0
 OBJ=$(OBJ_SRC:src/lib/%.cpp=bin/lib%.o)
 DEBUG_OBJ=$(OBJ_SRC:src/lib/%.cpp=bin/lib%-debug.o)
 .PHONY: all

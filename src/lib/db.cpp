@@ -244,7 +244,7 @@ bool DB::set_quanity(int id, int curr_id, float quanity){
  std::string sql=std::string("SELECT UID, currency_ID, quanity FROM users_inventory where UID='")+std::to_string(id)+std::string("' AND currency_ID='")+std::to_string(curr_id)+"';";
  if(sqlite3_prepare(db, sql.c_str(),-1, &query,0)){
    #ifdef DEBUG
-   fprintf(stderr, "Query error in DB::buy\nSQL query: %s\n", sql.c_str());
+   fprintf(stderr, "Query error in DB::set_quanity\nSQL query: %s\n", sql.c_str());
    #endif
  }
  else{
@@ -328,7 +328,57 @@ bool DB::buy(const std::string& currency, float quanity){
  return 1;
 }
 bool DB::sell(const std::string& currency, float quanity){
- bool success=0;
- return success;
+ if(!check_login())return 0;
+ float resbal=0, price=get_price(currency); //total means money that will be spent
+ if(price==-1){return 0;}
+ int id=0, curr_id;
+ if((id=get_user_id(*username))==-1){
+  return 0;
+ }
+ //check for errors
+ if(quanity<=0){fprintf(stderr, "Error: invalid quanity\n");return 0;}
+ if((resbal=get_user_bal(id))==-1||(curr_id=get_currency_ID(currency))==-1){
+  fprintf(stderr, "Unknown error occurred\n");return 0;
+ }
+ float q_bef=get_quanity(id, curr_id);		//quanity before
+ if(q_bef==-1){
+  fprintf(stderr, "Something went wrong\n");
+ }
+ //final balance after transaction
+ resbal=resbal+(price*quanity*0.9);		//take 10%
+ printf("You will get %f$(10%% tax)\nYour balance after this transaction will be %f$\nContinue? [Y/N]\n",(float)(price*quanity*0.9), resbal);
+ std::string in=gettext().substr(0,1);
+ if(in!="Y"&&in!="y"){
+  return 1;
+ }
+ if(quanity>q_bef){
+  fprintf(stderr, "Not enough currency\n");
+  return 0;
+ }
+ 
+ if(!this->set_quanity(id, curr_id, q_bef-quanity)){
+  #ifdef DEBUG
+  fprintf(stderr, "Failed to set the quanity\n");
+  #else
+  fprintf(stderr, "Something went wrong\n");
+  #endif
+  return 0;
+ }
+ //Remove money from account,increase the currency price  and log the transaction
+ std::string s_id=std::to_string(id);
+ std::string s_currid=std::to_string(curr_id);
+ std::string s_resb=std::to_string(resbal);
+ float resp=price-(quanity*0.1);	//decrease the price
+ if(resp<=0){resp=0.01;}
+ std::string s_resp=std::to_string(resp);
+ std::string s_quanity=std::to_string(quanity);
+ std::string sql=std::string("UPDATE users SET balance='")+s_resb+std::string("' WHERE ID='")+s_id+"';";
+ sqlite3_exec(db, sql.c_str(),0,0,0);
+ sql=std::string("UPDATE currencies SET price='")+s_resp+std::string("' WHERE ID='")+std::to_string(curr_id)+"';";
+ sqlite3_exec(db, sql.c_str(),0,0,0);
+ std::string comma=",";
+ sql=std::string("INSERT INTO log(UID, currency_ID, quanity, bought) values(")+s_id+comma+s_currid+comma+s_quanity+",false);";
+ sqlite3_exec(db, sql.c_str(),0,0,0);
+ return 1;
 }
 
