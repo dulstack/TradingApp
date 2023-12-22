@@ -6,14 +6,12 @@
 <h3>Compiling</h3>
 <p>You will need to have cmake or make installed to do this</p>
 <p>To build with cmake:</p>
-<code>
-<pre>mkdir bin
+<pre><code>mkdir bin
 cd bin
 cmake ..
-cmake --build .</pre>
-</code>
+cmake --build .
+</code></pre>
 <p>To build with make(won't work on some platforms):</p>
-<code>
-<pre>make all
-</pre>
+</pre><code>make all
 </code>
+</pre>
